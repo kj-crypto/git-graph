@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+
+GIT_DIR="git-project"
+GIT="git --git-dir $GIT_DIR --work-tree ."
+
+help() {
+	cat << EOF
+Usage: custom-git <command>
+
+Commands:
+	init            Initialize the repository
+	status          Show the status of the repository
+	log             Show the log of the repository
+	add <file>      Add file to the repository
+	u <message>     Commit all changes with message
+	up <message>    Commit all changes with message and push
+	rm <file>       Remove file from the repository
+	--help          Show this help message
+EOF
+}
+
+git_init() {
+    mkdir -p $GIT_DIR $GIT_DIR/objects $GIT_DIR/refs $GIT_DIR/refs/heads
+    echo "ref: refs/heads/master" > $GIT_DIR/HEAD
+    echo "Initialized repository"
+}
+
+git_update() {
+    if [ -z "$1" ]; then
+        echo "Empy message"
+        help
+        exit 1
+    fi
+    $GIT add -u && $GIT commit -m "$1"
+}
+
+FORMAT_STYLE="%C(yellow)%h %C(bold white)%s%C(reset) %C(dim white)%>(12)%cr%C(reset) \
+%C(cyan)%>(8)%aN%C(auto)%d %C(reset)"
+
+case $1 in
+    init)
+        git_init
+        ;;
+    status)
+		$GIT status -uno
+		;;
+	log)
+		$GIT log --all --oneline --graph --date=short --format="$FORMAT_STYLE"
+		;;
+    add)
+        if [ -z "$2" ]; then
+            echo "Empy file name"
+            help
+            exit 1
+        fi
+        $GIT add "$2"
+        ;;
+    u)
+        git_update "$2"
+        ;;
+    up)
+        git_update "$2"
+        $GIT push
+        ;;
+    checkout)
+        if [ -z "$2" ]; then
+            echo "Empy branch name"
+            help
+            exit 1
+        fi
+        $GIT checkout "$2"
+        ;;
+    rm)
+        shift
+        $GIT rm "$@"
+        ;;
+    --help)
+		help
+		;;
+    *)
+		help
+		;;
+	esac
