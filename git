@@ -5,17 +5,17 @@ GIT="git --git-dir $GIT_DIR --work-tree ."
 
 help() {
 	cat << EOF
-Usage: custom-git <command>
+Usage: $0 <command>
 
 Commands:
-	init            Initialize the repository
-	status          Show the status of the repository
-	log             Show the log of the repository
-	add <file>      Add file to the repository
-	u <message>     Commit all changes with message
-	up <message>    Commit all changes with message and push
-	rm <file>       Remove file from the repository
-	--help          Show this help message
+
+init                Initialize the repository
+status              Show the status of the repository
+log                 Show the log of the repository
+cu <message>        Commit updated changes with message
+ca                  Ammend last commit
+cp <message>        Commit with message and push
+--help              Show this help message
 EOF
 }
 
@@ -25,14 +25,6 @@ git_init() {
     echo "Initialized repository"
 }
 
-git_update() {
-    if [ -z "$1" ]; then
-        echo "Empy message"
-        help
-        exit 1
-    fi
-    $GIT add -u && $GIT commit -m "$1"
-}
 
 FORMAT_STYLE="%C(yellow)%h %C(bold white)%s%C(reset) %C(dim white)%>(12)%cr%C(reset) \
 %C(cyan)%>(8)%aN%C(auto)%d %C(reset)"
@@ -42,42 +34,36 @@ case $1 in
         git_init
         ;;
     status)
-		$GIT status -uno
-		;;
-	log)
-		$GIT log --all --oneline --graph --date=short --format="$FORMAT_STYLE"
-		;;
-    add)
-        if [ -z "$2" ]; then
-            echo "Empy file name"
-            help
-            exit 1
-        fi
-        $GIT add "$2"
+        $GIT status -uno
+        ;;
+    log)
+        $GIT log --all --oneline --graph --date=short --format="$FORMAT_STYLE"
         ;;
     u)
-        git_update "$2"
-        ;;
-    up)
-        git_update "$2"
-        $GIT push
-        ;;
-    checkout)
-        if [ -z "$2" ]; then
-            echo "Empy branch name"
+        shift
+        if [ -z "$1" ]; then
+            echo "Message cannot be empty"
             help
             exit 1
         fi
-        $GIT checkout "$2"
+        $GIT add -u && $GIT commit -m "$1"
         ;;
-    rm)
+    ca)
+        $GIT commit --amend --no-edit --date="$(date)"
+        ;;
+    cp)
         shift
-        $GIT rm "$@"
+        if [ -z "$1" ]; then
+            echo "Message cannot be empty"
+            help
+            exit 1
+        fi
+        $GIT commit -m "$1" && $GIT push
         ;;
     --help)
-		help
-		;;
+        help
+        ;;
     *)
-		help
-		;;
-	esac
+        $GIT "$@"
+        ;;
+esac
