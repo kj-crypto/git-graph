@@ -9,40 +9,39 @@ def calculate_bezier_point(t, P0, P1, P2, P3):
     y = (1-t)**3 * P0[1] + 3*(1-t)**2 * t * P1[1] + 3*(1-t) * t**2 * P2[1] + t**3 * P3[1]
     return (x, y)
 
+
+def calc_quad_bezier(t, P0, P1, P2):
+    """Compute a point along a quadratic Bézier curve at parameter t."""
+    x = (1 - t)**2 * P0[0] + 2*(1 - t)*t * P1[0] + t**2 * P2[0]
+    y = (1 - t)**2 * P0[1] + 2*(1 - t)*t * P1[1] + t**2 * P2[1]
+    return (x, y)
+
+
 def draw_connection(canvas, c1, c2, R, steps=50):
-    """
-    Draws a connection between two circles on the canvas.
-    If the circles have the same y coordinate, a straight line is drawn.
-    Otherwise, a cubic Bézier curve is computed using the centers as endpoints.
-    """
     colors = ['blue', 'green', 'purple', 'orange', 'pink', 'cyan']
     x1, y1 = c1
     x2, y2 = c2
-    # If circles are aligned vertically (same x coordinate), draw a straight line:
+
     if x1 == x2:
         color = colors[int(x1/R/2.5) % len(colors)]
         canvas.create_line(x1, y1 + R, x2, y2 - R, fill=color, width=4)
         return
 
-    # For different y coordinates, compute the Bézier control points:
-    # Use the vertical midpoint as the y value for both control points.
-    mid_y = (c1[1] + c2[1]) / 2
+    if x2 > x1:
+        P0 = (x1 + R, y1)
+        P1 = (x2, y1)
+        P2 = (x2, y2 -R)
+    else:
+        P0 = (x1, y1+ R)
+        P1 = (x1, y2)
+        P2 = (x2 + R, y2)
 
-    # Endpoints of the curve:
-    P0 = (c1[0], c1[1] + R)
-    P3 = (c2[0], c2[1] - R)
-    # Control points:
-    P1 = (c1[0], mid_y)
-    P2 = (c2[0], mid_y)
-
-    # Sample points along the curve.
     points = []
     for i in range(steps + 1):
         t = i / steps
-        x, y = calculate_bezier_point(t, P0, P1, P2, P3)
+        x, y = calc_quad_bezier(t, P0, P1, P2)
         points.extend([x, y])
 
-    # Draw the Bézier curve (Tkinter's 'smooth' option can help make it look curved):
     canvas.create_line(points, fill='black', width=2, smooth=True)
 
 
