@@ -142,7 +142,9 @@ class GitGraphVisualizer:
 
         for commit in self.commits.values():
             for parent_hash in commit.parents:
-                parent = self.commits[parent_hash]
+                parent = self.commits.get(parent_hash)
+                if parent is None:
+                    continue
                 draw_connection(self.canvas, self.get_position(commit), self.get_position(parent), self.R)
 
 
