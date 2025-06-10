@@ -2,6 +2,7 @@ package commit
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -89,4 +90,15 @@ func ParseCommits(args []string) (map[string]Commit, error) {
 	}
 
 	return commits, nil
+}
+
+func GetCommitStats(commit_hash string) string {
+	cmd := exec.Command("git", "show", "--stat", "--color=always", commit_hash)
+	cmd.Env = append(os.Environ(), "TERM=xterm-256color")
+
+	output, err := cmd.Output()
+	if err != nil {
+		return ""
+	}
+	return string(output)
 }
