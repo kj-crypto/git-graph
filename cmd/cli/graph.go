@@ -1,11 +1,12 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	commit "git-graph/pkg/commit"
 	graph "git-graph/pkg/graph"
 	"git-graph/pkg/ui"
 	"log"
-	"os"
 	"regexp"
 	"strings"
 )
@@ -33,11 +34,29 @@ func prepareLines(input string) []map[string]string {
 	return result
 }
 
-func main() {
-	args := os.Args[1:]
-	if len(args) == 0 {
-		args = []string{"--all"}
+func argParse() []string {
+	flag.Usage = func() {
+		fmt.Println(`Usage: git-graph [options]
+
+Options:
+	--all		Show all commits. Default option.
+	--help		Show this help message
+
+Examples:
+	git-graph
+	git-graph 0ef00000..HEAD
+	git-graph --help`)
+		flag.PrintDefaults()
 	}
+	flag.Parse()
+	if flag.NArg() == 0 {
+		return []string{"--all"}
+	}
+	return flag.Args()
+}
+
+func main() {
+	args := argParse()
 
 	commits, err := commit.ParseCommits(args)
 	if err != nil {
