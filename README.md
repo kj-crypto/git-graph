@@ -22,4 +22,4 @@ The algorithm details is described in [docs/algorithm.md](./docs/algorithm.md)
 
 
 ## Tests
-You can generate synthetic repository with [create-synthetic-repo.sh](./scripts/create-synthetic-repo.sh) script. 
+You can generate synthetic repository with [create-synthetic-repo.sh](./scripts/create-synthetic-repo.sh) script.
